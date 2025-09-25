@@ -4,6 +4,7 @@ import { PrismaClient } from '../generated/prisma';
 import { exchangeCodeForToken, fetchUserRepos } from '../services/github';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { authenticateJWT } from '../middlewares/auth';
 dotenv.config();
 
 const router = express.Router();
@@ -55,19 +56,27 @@ router.get('/github/callback', async (req, res) => {
 });
 
 // Add this route to fetch user repositories
-router.get('/github/repos', async (req, res) => {
-    const token = req.query.token as string;
-    if (!token) {
-        return res.status(400).json({ error: 'Missing GitHub token' });
+
+router.get('/github/repos', authenticateJWT, async (req, res) => {
+    // @ts-ignore
+    const userId = req.user?.userId;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
-        const repos = await fetchUserRepos(token);
+        // Find the user in the database to get their GitHub token
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.githubToken) {
+            return res.status(404).json({ error: 'User or GitHub token not found' });
+        }
+        const repos = await fetchUserRepos(user.githubToken);
         res.json({ repos });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch user repositories' });
     }
 });
+
 
 // Connect a repo (store metadata + webhook secret)
 router.post('/connect-repo', async (req, res) => {
