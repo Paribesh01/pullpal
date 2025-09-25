@@ -141,3 +141,40 @@ export async function postReviewComments(
         }
     }
 }
+
+/**
+ * Lists all webhooks for a given repository.
+ */
+export async function listRepoWebhooks(owner: string, repo: string, token: string): Promise<any[]> {
+    const response = await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/hooks`,
+        {
+            headers: {
+                Authorization: `token ${token}`,
+                Accept: 'application/vnd.github.v3+json',
+            },
+        }
+    );
+    if (response.status !== 200) {
+        throw new Error('Failed to list repository webhooks');
+    }
+    return response.data;
+}
+
+/**
+ * Deletes a webhook by id for a given repository.
+ */
+export async function deleteRepoWebhook(owner: string, repo: string, hookId: number, token: string): Promise<void> {
+    const response = await axios.delete(
+        `https://api.github.com/repos/${owner}/${repo}/hooks/${hookId}`,
+        {
+            headers: {
+                Authorization: `token ${token}`,
+                Accept: 'application/vnd.github.v3+json',
+            },
+        }
+    );
+    if (response.status !== 204) {
+        throw new Error('Failed to delete repository webhook');
+    }
+}

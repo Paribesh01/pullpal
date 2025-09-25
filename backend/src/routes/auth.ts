@@ -1,7 +1,7 @@
 import express from 'express';
 import axios from 'axios';
 import { PrismaClient } from '../generated/prisma';
-import { exchangeCodeForToken, fetchUserRepos } from '../services/github';
+import { exchangeCodeForToken, fetchUserRepos, listRepoWebhooks, deleteRepoWebhook } from '../services/github';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { authenticateJWT } from '../middlewares/auth';
@@ -117,6 +117,22 @@ router.post('/connect-repo', async (req, res) => {
 
         // Create webhook on GitHub
         const webhookUrl = process.env.WEBHOOK_URL || 'https://5e7282a1575a.ngrok-free.app/webhooks/github';
+        // Remove any existing webhook with the same URL before creating a new one
+        try {
+            const webhooks = await listRepoWebhooks(owner, name, user.githubToken);
+            const matchingWebhooks = webhooks.filter((hook: any) => hook.config && hook.config.url === webhookUrl);
+            for (const hook of matchingWebhooks) {
+                try {
+                    await deleteRepoWebhook(owner, name, hook.id, user.githubToken);
+                    console.log('[connect-repo] Deleted existing webhook before creating new one:', hook.id);
+                } catch (err) {
+                    console.error(`[connect-repo] Failed to delete existing webhook id ${hook.id}:`, (err as any)?.response?.data || err);
+                }
+            }
+        } catch (err) {
+            console.error('[connect-repo] Error listing/deleting existing webhooks before creation:', (err as any)?.response?.data || err);
+        }
+        // Now create the webhook
         console.log('[connect-repo] Creating webhook on GitHub:', { owner, name, webhookUrl });
         try {
             await axios.post(
@@ -159,6 +175,21 @@ router.post('/connect-repo', async (req, res) => {
                 data: { connected: false },
             });
             console.log('[connect-repo] Repo was already connected, now disconnected:', repo.id);
+
+            // Delete webhook from GitHub
+            try {
+                const webhooks = await listRepoWebhooks(owner, name, user.githubToken);
+                const webhookUrl = process.env.WEBHOOK_URL || 'https://5e7282a1575a.ngrok-free.app/webhooks/github';
+                const targetWebhook = webhooks.find((hook: any) => hook.config && hook.config.url === webhookUrl);
+                if (targetWebhook) {
+                    await deleteRepoWebhook(owner, name, targetWebhook.id, user.githubToken);
+                    console.log('[connect-repo] GitHub webhook deleted:', targetWebhook.id);
+                } else {
+                    console.warn('[connect-repo] No matching webhook found to delete for URL:', webhookUrl);
+                }
+            } catch (err) {
+                console.error('[connect-repo] Failed to delete GitHub webhook:', err);
+            }
         } else if (existingRepo) {
             // If exists but not connected, connect it
             repo = await prisma.repo.update({

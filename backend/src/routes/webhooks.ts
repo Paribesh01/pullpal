@@ -64,8 +64,8 @@ router.post('/github', express.raw({ type: '*/*' }), async (req, res) => {
             return res.status(401).json({ error: 'Invalid signature' });
         }
 
-        // Only handle PR opened/synchronize
-        if (event === 'pull_request' && ['opened', 'synchronize'].includes(body.action)) {
+
+        if (event === 'pull_request' && ['opened', 'synchronize', 'reopened'].includes(body.action)) {
             console.log('Handling pull_request event:', body.action);
             await handlePullRequestEvent(body, repo);
         } else {
