@@ -64,7 +64,17 @@ export default function ReposPage() {
     fetchUserRepos(token)
       .then((data) => {
         console.log("data::::::", data);
-        setRepos(data.repos);
+        setRepos(
+          data.repos.map((repo: any) => ({
+            ...repo,
+            owner:
+              typeof repo.owner === "string"
+                ? { login: repo.owner }
+                : repo.owner,
+            branches: [repo.default_branch],
+            stats: { prsGenerated: 0, timeSaved: "0h", bugsDetected: 0 },
+          }))
+        );
         setLoading(false);
       })
       .catch(() => {
@@ -76,7 +86,7 @@ export default function ReposPage() {
   const filteredRepos = repos.filter(
     (repo) =>
       repo.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      repo.owner?.toLowerCase().includes(searchQuery.toLowerCase())
+      repo.owner?.login?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleViewDetails = (repo: any) => {
@@ -96,7 +106,7 @@ export default function ReposPage() {
   const handleGeneratePR = () => {
     if (selectedRepo) {
       router.push(
-        `/generate?repo=${selectedRepo.owner}/${selectedRepo.name}&branch=${selectedBranch}`
+        `/generate?repo=${selectedRepo.owner.login}/${selectedRepo.name}&branch=${selectedBranch}`
       );
     }
   };
@@ -161,9 +171,9 @@ export default function ReposPage() {
                         </div>
                         <div>
                           <div className="font-medium">{repo.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {repo.owner}/{repo.name}
-                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {repo.owner.login}/{repo.name}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
@@ -257,7 +267,7 @@ function RepoDetailsModal({
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
               <Github className="h-5 w-5" />
             </div>
-            {repo.owner}/{repo.name}
+            {repo.owner?.login}/{repo.name}
           </DialogTitle>
           <DialogDescription>
             Repository details and configuration options
