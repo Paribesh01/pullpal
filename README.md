@@ -55,7 +55,7 @@ PullPal is more than a Copilot — it’s an end-to-end PR assistant that saves 
 - Frontend: React + Tailwind CSS
 - Backend: Node.js + Express
 - Database: PostgreSQL (optional for PR metadata and user preferences)
-- AI/ML: OpenAI GPT API for generation and review feedback
+- AI/ML: Gemini API for generation and review feedback
 
 ## 🚀 Getting Started
 
@@ -106,10 +106,7 @@ PullPal can be customized for:
 pullpal/
 ├─ backend/          # Node.js + Express backend
 ├─ frontend/         # React + Tailwind UI
-├─ database/         # PostgreSQL setup and migrations
-├─ scripts/          # Utility scripts for PR generation
-├─ README.md         # Project overview
-└─ package.json
+└─ README.md         # Project overview
 ```
 
 ## 🤝 Contributing
