@@ -113,10 +113,12 @@ export async function postReviewComments(
     comments: { path: string; line: number; body: string }[],
     token: string
 ) {
+    console.log('[postReviewComments] Start', { owner, repo, prNumber, comments });
     const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`;
     // If too many comments, group into one summary
     if (comments.length > 20) {
         const summary = comments.map(c => `File: ${c.path}, Line: ${c.line}\n${c.body}`).join('\n\n');
+        console.log('[postReviewComments] Summary', { summary });
         await axios.post(
             url,
             { body: summary, event: 'COMMENT' },
@@ -125,15 +127,17 @@ export async function postReviewComments(
     } else {
         // Post each comment individually
         for (const comment of comments) {
+            console.log('[postReviewComments] Posting comment', { comment });
             await axios.post(
                 url,
                 {
                     body: comment.body,
                     event: 'COMMENT',
-                    comments: [{ path: comment.path, line: comment.line, body: comment.body }],
+                    comments: [{ path: comment.path, line: comment.line, body: comment.body, side: 'RIGHT' }],
                 },
                 { headers: { Authorization: `token ${token}` } }
             );
+            console.log('[postReviewComments] Comment posted', { comment });
         }
     }
 }

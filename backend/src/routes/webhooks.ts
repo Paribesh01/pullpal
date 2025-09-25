@@ -21,26 +21,60 @@ router.post('/github', express.raw({ type: '*/*' }), async (req, res) => {
     const signature = req.headers['x-hub-signature-256'] as string | undefined;
     const payload = req.body;
 
+    // Log incoming headers and event type
+    console.log('Received GitHub webhook:', {
+        event,
+        signature,
+        headers: req.headers,
+    });
+
     try {
-        const body = JSON.parse(payload.toString());
+
+        let body: any;
+        let rawPayload: Buffer;
+
+        if (Buffer.isBuffer(req.body)) {
+            rawPayload = req.body;
+            body = JSON.parse(rawPayload.toString());
+        } else if (typeof req.body === 'string') {
+            rawPayload = Buffer.from(req.body);
+            body = JSON.parse(req.body);
+        } else {
+            // Already parsed object (e.g., by express.json())
+            body = req.body;
+            rawPayload = Buffer.from(JSON.stringify(req.body));
+        }
         const repoId = String(body.repository.id);
+
+        // Log parsed body and repoId
+        console.log('Parsed webhook body:', body);
+        console.log('Extracted repoId:', repoId);
 
         // Get repo and secret
         const repo = await prisma.repo.findUnique({ where: { githubRepoId: repoId } });
-        if (!repo) return res.status(404).json({ error: 'Repo not found' });
+        console.log('Repo lookup result:', repo);
 
-        if (!verifySignature(repo.webhookSecret, payload, signature)) {
+        if (!repo) {
+            console.warn('Repo not found for repoId:', repoId);
+            return res.status(404).json({ error: 'Repo not found' });
+        }
+
+        if (!verifySignature(repo.webhookSecret, rawPayload, signature)) {
+            console.warn('Invalid signature for repo:', repoId);
             return res.status(401).json({ error: 'Invalid signature' });
         }
 
         // Only handle PR opened/synchronize
         if (event === 'pull_request' && ['opened', 'synchronize'].includes(body.action)) {
+            console.log('Handling pull_request event:', body.action);
             await handlePullRequestEvent(body, repo);
+        } else {
+            console.log('Event not handled:', event, body.action);
         }
 
         res.json({ ok: true });
     } catch (err) {
-        console.error(err);
+        console.error('Error handling webhook:', err);
         res.status(500).json({ error: 'Webhook error' });
     }
 });
