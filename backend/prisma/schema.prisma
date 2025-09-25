@@ -33,6 +33,7 @@ model Repo {
   user          User     @relation(fields: [userId], references: [id])
   reviews       Review[] // Relation
   createdAt     DateTime @default(now())
+  connected     Boolean  @default(false)
 }
 
 model Review {

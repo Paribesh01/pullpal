@@ -54,7 +54,7 @@ export default function ReposPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchRepos = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("Not authenticated");
@@ -81,6 +81,10 @@ export default function ReposPage() {
         setError("Failed to fetch repositories");
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchRepos();
   }, []);
 
   const filteredRepos = repos.filter(
@@ -108,6 +112,40 @@ export default function ReposPage() {
       router.push(
         `/generate?repo=${selectedRepo.owner.login}/${selectedRepo.name}&branch=${selectedBranch}`
       );
+    }
+  };
+
+  const handleConnectRepo = async (repo: any, repoId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      // You may need to get userId from localStorage or context
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const res = await fetch("http://localhost:3001/auth/connect-repo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          repoId,
+          userId: user.id,
+          githubRepoId: repo.id,
+          name: repo.name,
+          owner: repo.owner.login,
+          webhookSecret: "some-random-secret",
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to connect repo");
+      // Optionally show a success message here
+      // Refetch repos to update the table
+      await fetchRepos(); // You may need to extract your fetch logic to a function
+      // Optionally redirect or just update the UI
+    } catch (e) {
+      setError("Could not connect repo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,7 +196,7 @@ export default function ReposPage() {
                   <TableHead>Provider</TableHead>
                   <TableHead>Visibility</TableHead>
                   <TableHead>Last Synced</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Connect</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -194,29 +232,14 @@ export default function ReposPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewDetails(repo)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleSync(repo.id)}
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDisconnect(repo.id)}
-                        >
-                          <Unlink className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant={repo.connected ? "destructive" : "default"}
+                        size="sm"
+                        disabled={loading}
+                        onClick={() => handleConnectRepo(repo, repo.id)}
+                      >
+                        {repo.connected ? "Disconnect" : "Connect"}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

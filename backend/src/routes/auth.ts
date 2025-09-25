@@ -70,7 +70,23 @@ router.get('/github/repos', authenticateJWT, async (req, res) => {
             return res.status(404).json({ error: 'User or GitHub token not found' });
         }
         const repos = await fetchUserRepos(user.githubToken);
-        res.json({ repos });
+
+        // Fetch all connected repos for this user from your DB
+        const connectedRepos = await prisma.repo.findMany({
+            where: { userId, connected: true },
+            select: { githubRepoId: true },
+        });
+        const connectedRepoIds = new Set(connectedRepos.map(r => String(r.githubRepoId)));
+
+        // Add 'connected' property to each repo
+        const reposWithConnection = repos.map((repo: any) => ({
+            ...repo,
+            connected: connectedRepoIds.has(String(repo.id)),
+        }));
+
+        console.log("reposWithConnection::::::", reposWithConnection);
+
+        res.json({ repos: reposWithConnection });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch user repositories' });
@@ -79,17 +95,41 @@ router.get('/github/repos', authenticateJWT, async (req, res) => {
 
 
 // Connect a repo (store metadata + webhook secret)
+
 router.post('/connect-repo', async (req, res) => {
     const { userId, githubRepoId, name, owner, webhookSecret } = req.body;
     try {
-        const repo = await prisma.repo.create({
-            data: { userId, githubRepoId, name, owner, webhookSecret },
+        // Try to find the repo for this user
+        const existingRepo = await prisma.repo.findFirst({
+            where: { userId, githubRepoId: String(githubRepoId) },
         });
+
+        let repo;
+        if (existingRepo && existingRepo.connected) {
+            // If already connected, disconnect it
+            repo = await prisma.repo.update({
+                where: { id: existingRepo.id },
+                data: { connected: false },
+            });
+        } else if (existingRepo) {
+            // If exists but not connected, connect it
+            repo = await prisma.repo.update({
+                where: { id: existingRepo.id },
+                data: { connected: true, name, owner, webhookSecret },
+            });
+        } else {
+            // If not exists, create and connect
+            repo = await prisma.repo.create({
+                data: { userId, githubRepoId: String(githubRepoId), connected: true, name, owner, webhookSecret },
+            });
+        }
+
         res.json({ repo });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Failed to connect repo' });
+        res.status(500).json({ error: 'Failed to toggle repo connection' });
     }
 });
+
 
 export default router;
