@@ -1,7 +1,6 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -79,11 +78,9 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 p-6 space-y-6">
+    <>
+      <Header />
+      <main className="p-6 space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-balance">Settings</h1>
             <p className="text-muted-foreground text-pretty">
@@ -324,8 +321,7 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
-        </main>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }
