@@ -1,7 +1,6 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -184,11 +183,9 @@ export default function ReviewPR() {
   const selectedStyle = reviewStyles.find((s) => s.id === reviewStyle)
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 p-6 space-y-6">
+    <>
+      <Header />
+      <main className="p-6 space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-balance">Review Pull Request</h1>
             <p className="text-muted-foreground text-pretty">
@@ -341,8 +338,7 @@ export default function ReviewPR() {
               </Card>
             </div>
           )}
-        </main>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }

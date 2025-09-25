@@ -3,12 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, GitPullRequest, FileSearch, BarChart3, Settings, Code2 } from "lucide-react"
+import { LayoutDashboard, GitPullRequest, FileSearch, BarChart3, Settings, Code2, FolderGit2 } from "lucide-react"
 
 const navigation = [
   {
     name: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -20,6 +20,11 @@ const navigation = [
     name: "Review PR",
     href: "/review",
     icon: FileSearch,
+  },
+  {
+    name: "Repos",
+    href: "/repos",
+    icon: FolderGit2,
   },
   {
     name: "Repo Insights",
@@ -67,3 +72,5 @@ export function Sidebar() {
     </div>
   )
 }
+
+ 

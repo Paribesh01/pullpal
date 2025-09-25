@@ -1,7 +1,6 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
@@ -45,11 +44,9 @@ export default function RepoInsights() {
   const [timeRange, setTimeRange] = useState("30d")
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 p-6 space-y-6">
+    <>
+      <Header />
+      <main className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-balance">Repository Insights</h1>
@@ -248,8 +245,7 @@ export default function RepoInsights() {
               </div>
             </CardContent>
           </Card>
-        </main>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }
