@@ -1,10 +1,15 @@
 import express from 'express';
 import axios from 'axios';
 import { PrismaClient } from '../generated/prisma';
-import { exchangeCodeForToken } from '../services/github';
+import { exchangeCodeForToken, fetchUserRepos } from '../services/github';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+
 
 // Step 1: Redirect user to GitHub OAuth
 router.get('/github', (req, res) => {
@@ -41,11 +46,26 @@ router.get('/github/callback', async (req, res) => {
             },
         });
 
-        // TODO: Set session/cookie or return JWT
-        res.json({ user });
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!);
+        res.json({ user, token });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'GitHub OAuth failed' });
+    }
+});
+
+// Add this route to fetch user repositories
+router.get('/github/repos', async (req, res) => {
+    const token = req.query.token as string;
+    if (!token) {
+        return res.status(400).json({ error: 'Missing GitHub token' });
+    }
+    try {
+        const repos = await fetchUserRepos(token);
+        res.json({ repos });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch user repositories' });
     }
 });
 

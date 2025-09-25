@@ -42,6 +42,8 @@ export async function exchangeCodeForToken(code: string): Promise<string> {
     });
 
     const data = await response.json() as any;
+
+    console.log('data', data);
     if (!data.access_token) {
         throw new Error('Failed to obtain access token');
     }

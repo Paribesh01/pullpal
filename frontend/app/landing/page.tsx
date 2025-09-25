@@ -1,14 +1,21 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { GitPullRequest, Shield, BarChart3, ArrowRight, Play } from "lucide-react"
-import { useState } from "react"
-import { AuthModal } from "@/components/auth-modal"
-import { PricingSection } from "@/components/pricing-section"
-import { ThemeToggle } from "@/components/theme-toggle"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  GitPullRequest,
+  Shield,
+  BarChart3,
+  ArrowRight,
+  Play,
+} from "lucide-react";
+import { useState } from "react";
+import { AuthModal } from "@/components/auth-modal";
+import { PricingSection } from "@/components/pricing-section";
+import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 const stats = [
   {
@@ -31,47 +38,56 @@ const stats = [
     label: "faster to deploy",
     description: "with automated checks",
   },
-]
+];
 
 const features = [
   {
     icon: GitPullRequest,
     title: "AI-Powered PR Generation",
-    description: "Generate comprehensive pull requests with intelligent commit analysis and automated descriptions.",
+    description:
+      "Generate comprehensive pull requests with intelligent commit analysis and automated descriptions.",
   },
   {
     icon: Shield,
     title: "Smart Code Review",
-    description: "Get expert-level code reviews with security, performance, and best practice recommendations.",
+    description:
+      "Get expert-level code reviews with security, performance, and best practice recommendations.",
   },
   {
     icon: BarChart3,
     title: "Team Analytics",
-    description: "Track your team's productivity and code quality metrics with detailed insights and reporting.",
+    description:
+      "Track your team's productivity and code quality metrics with detailed insights and reporting.",
   },
-]
+];
 
-const companies = ["GitHub", "GitLab", "Bitbucket", "Azure DevOps", "Jira"]
+const companies = ["GitHub", "GitLab", "Bitbucket", "Azure DevOps", "Jira"];
 
 export default function LandingPage() {
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login")
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
   const handleOpenAuth = (mode: "login" | "signup" = "login") => {
-    console.log(`[v0] Opening ${mode} modal`)
-    setAuthMode(mode)
-    setShowAuthModal(true)
-  }
+    console.log(`[v0] Opening ${mode} modal`);
+    setAuthMode(mode);
+    setShowAuthModal(true);
+  };
+  const BACKEND_URL = ""; // Adjust if needed
+
+  const handleSignInWithGitHub = () => {
+    console.log(`[v0] Redirecting to http://localhost:3001/auth/github`);
+    window.location.href = "http://localhost:3001/auth/github";
+  };
 
   const handleCloseAuth = (open: boolean) => {
-    console.log("[v0] Auth modal state changed to:", open)
-    setShowAuthModal(open)
-  }
+    console.log("[v0] Auth modal state changed to:", open);
+    setShowAuthModal(open);
+  };
 
   const handleModeChange = (mode: "login" | "signup") => {
-    console.log(`[v0] Auth mode changed to: ${mode}`)
-    setAuthMode(mode)
-  }
+    console.log(`[v0] Auth mode changed to: ${mode}`);
+    setAuthMode(mode);
+  };
 
   return (
     <div className="min-h-screen bg-background grid-pattern">
@@ -87,13 +103,22 @@ export default function LandingPage() {
                 <span className="text-xl font-bold">PullPal</span>
               </div>
               <div className="hidden md:flex items-center gap-6">
-                <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href="#features"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Features
                 </a>
-                <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href="#pricing"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Pricing
                 </a>
-                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/docs"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Docs
                 </Link>
               </div>
@@ -102,13 +127,13 @@ export default function LandingPage() {
               <ThemeToggle />
               <Button
                 variant="ghost"
-                onClick={() => handleOpenAuth("login")}
+                onClick={handleSignInWithGitHub}
                 className="text-muted-foreground hover:text-foreground"
               >
                 Sign In
               </Button>
               <Button
-                onClick={() => handleOpenAuth("signup")}
+                onClick={handleSignInWithGitHub}
                 className="bg-foreground text-background hover:bg-foreground/90"
               >
                 Get Started
@@ -121,7 +146,10 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="text-center space-y-8">
-          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+          <Badge
+            variant="outline"
+            className="text-primary border-primary/20 bg-primary/5"
+          >
             PullPal for Enterprise
           </Badge>
 
@@ -130,19 +158,24 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Empower your entire development team to create pull requests at the speed of thought, while ensuring code
-            quality remains at the forefront.
+            Empower your entire development team to create pull requests at the
+            speed of thought, while ensuring code quality remains at the
+            forefront.
           </p>
 
           <div className="flex items-center justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => handleOpenAuth("signup")}
+              onClick={handleSignInWithGitHub}
               className="bg-foreground text-background hover:bg-foreground/90"
             >
               Get Started
             </Button>
-            <Button size="lg" variant="outline" className="bg-transparent border-border">
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-transparent border-border"
+            >
               <Play className="h-4 w-4 mr-2" />
               Watch Demo
             </Button>
@@ -183,21 +216,33 @@ export async function generatePR(commits: Commit[]) {
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
-            <Card key={index} className="bg-card/30 border-border/50 backdrop-blur-sm">
+            <Card
+              key={index}
+              className="bg-card/30 border-border/50 backdrop-blur-sm"
+            >
               <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {stat.value}
+                </div>
                 <div className="font-medium mb-1">{stat.label}</div>
-                <div className="text-sm text-muted-foreground">{stat.description}</div>
+                <div className="text-sm text-muted-foreground">
+                  {stat.description}
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         <div className="mt-16 text-center">
-          <p className="text-muted-foreground mb-8">Trusted by development teams at</p>
+          <p className="text-muted-foreground mb-8">
+            Trusted by development teams at
+          </p>
           <div className="flex items-center justify-center gap-8 flex-wrap">
             {companies.map((company, index) => (
-              <div key={index} className="text-lg font-medium text-muted-foreground/60">
+              <div
+                key={index}
+                className="text-lg font-medium text-muted-foreground/60"
+              >
                 {company}
               </div>
             ))}
@@ -209,13 +254,15 @@ export async function generatePR(commits: Commit[]) {
       <section id="features" className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-4xl font-bold mb-6 text-balance">The complete platform to build better PRs.</h2>
+            <h2 className="text-4xl font-bold mb-6 text-balance">
+              The complete platform to build better PRs.
+            </h2>
             <p className="text-lg text-muted-foreground mb-8 text-pretty">
-              Your team's toolkit to stop configuring and start innovating. Securely build, review, and deploy the best
-              code with PullPal.
+              Your team's toolkit to stop configuring and start innovating.
+              Securely build, review, and deploy the best code with PullPal.
             </p>
             <div className="flex gap-4">
-              <Button onClick={() => handleOpenAuth("signup")}>Get Started</Button>
+              <Button onClick={handleSignInWithGitHub}>Get Started</Button>
               <Button variant="outline" className="bg-transparent">
                 Explore Features
               </Button>
@@ -224,7 +271,10 @@ export async function generatePR(commits: Commit[]) {
 
           <div className="space-y-6">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-card/30 border-border/50 backdrop-blur-sm">
+              <Card
+                key={index}
+                className="bg-card/30 border-border/50 backdrop-blur-sm"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -232,7 +282,9 @@ export async function generatePR(commits: Commit[]) {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-muted-foreground text-sm">{feature.description}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {feature.description}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -243,19 +295,22 @@ export async function generatePR(commits: Commit[]) {
       </section>
 
       {/* Pricing Section */}
-      <PricingSection onGetStarted={() => handleOpenAuth("signup")} />
+      <PricingSection onGetStarted={handleSignInWithGitHub} />
 
       {/* CTA Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <Card className="bg-primary/5 border-primary/20 backdrop-blur-sm">
           <CardContent className="p-12 text-center">
-            <h2 className="text-3xl font-bold mb-4 text-balance">Make teamwork seamless.</h2>
+            <h2 className="text-3xl font-bold mb-4 text-balance">
+              Make teamwork seamless.
+            </h2>
             <p className="text-lg text-muted-foreground mb-8 text-pretty">
-              Tools for your team and stakeholders to share feedback and iterate faster.
+              Tools for your team and stakeholders to share feedback and iterate
+              faster.
             </p>
             <Button
               size="lg"
-              onClick={() => handleOpenAuth("signup")}
+              onClick={handleSignInWithGitHub}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Start Building Today
@@ -275,12 +330,19 @@ export async function generatePR(commits: Commit[]) {
               </div>
               <span className="font-semibold">PullPal</span>
             </div>
-            <p className="text-sm text-muted-foreground">© 2025 PullPal. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © 2025 PullPal. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
 
-      <AuthModal open={showAuthModal} onOpenChange={handleCloseAuth} mode={authMode} onModeChange={handleModeChange} />
+      <AuthModal
+        open={showAuthModal}
+        onOpenChange={handleCloseAuth}
+        mode={authMode}
+        onModeChange={handleModeChange}
+      />
     </div>
-  )
+  );
 }
