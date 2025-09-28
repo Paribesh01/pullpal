@@ -116,7 +116,7 @@ router.post('/connect-repo', async (req, res) => {
         }
 
         // Create webhook on GitHub
-        const webhookUrl = process.env.WEBHOOK_URL || 'https://5e7282a1575a.ngrok-free.app/webhooks/github';
+        const webhookUrl = process.env.WEBHOOK_URL || 'https://30a2ea87c6e7.ngrok-free.app/webhooks/github';
         // Remove any existing webhook with the same URL before creating a new one
         try {
             const webhooks = await listRepoWebhooks(owner, name, user.githubToken);

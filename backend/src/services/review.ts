@@ -55,12 +55,12 @@ export async function handlePullRequestEvent(body: any, repo: Repo) {
 export async function getAIReview(diff: string, meta: { prNumber: number; owner: string; name: string }) {
     console.log('[getAIReview] Start', { diff, meta });
     const prompt = `
-            You are a code review assistant. Analyze the following GitHub PR diff and provide feedback as a JSON array with objects: { "file": string, "line": number, "comment": string }.
+You are a code review assistant. Analyze the following GitHub PR diff, which may include changes in multiple files. For each file and each significant change, provide a separate feedback comment. 
+Return your feedback as a JSON array, where each object is: { "file": string, "line": number, "comment": string }.
 
-                Diff:
+Diff:
 ${diff}
 `;
-
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.0-flash-001',
@@ -78,7 +78,10 @@ ${diff}
         .trim();
 
     try {
-        const result = JSON.parse(cleaned);
+        let result = JSON.parse(cleaned);
+        if (!Array.isArray(result)) {
+            result = [result];
+        }
         console.log('[getAIReview] Result', { result });
         return result;
     } catch {
