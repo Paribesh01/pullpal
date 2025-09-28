@@ -178,3 +178,19 @@ export async function deleteRepoWebhook(owner: string, repo: string, hookId: num
         throw new Error('Failed to delete repository webhook');
     }
 }
+
+// Post a regular PR comment (issue comment)
+export async function postPRComment(
+    owner: string,
+    repo: string,
+    prNumber: number,
+    body: string,
+    token: string
+) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+    await axios.post(
+        url,
+        { body },
+        { headers: { Authorization: `token ${token}` } }
+    );
+}
