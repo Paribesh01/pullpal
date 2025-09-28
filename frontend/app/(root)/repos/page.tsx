@@ -55,13 +55,8 @@ export default function ReposPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRepos = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Not authenticated");
-      setLoading(false);
-      return;
-    }
-    fetchUserRepos(token)
+    // No need to get token from localStorage; backend reads from cookie
+    fetchUserRepos()
       .then((data) => {
         console.log("data::::::", data);
         setRepos(
@@ -119,14 +114,12 @@ export default function ReposPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem("token");
-      // You may need to get userId from localStorage or context
+      // No need to get token from localStorage
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const res = await fetch("http://localhost:3001/auth/connect-repo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           repoId,
@@ -138,10 +131,7 @@ export default function ReposPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed to connect repo");
-      // Optionally show a success message here
-      // Refetch repos to update the table
-      await fetchRepos(); // You may need to extract your fetch logic to a function
-      // Optionally redirect or just update the UI
+      await fetchRepos();
     } catch (e) {
       setError("Could not connect repo.");
     } finally {
@@ -159,10 +149,6 @@ export default function ReposPage() {
             Manage your connected repositories and their configurations
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Connect New Repo
-        </Button>
       </div>
 
       {/* Search */}
@@ -193,9 +179,7 @@ export default function ReposPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Repository</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Visibility</TableHead>
-                  <TableHead>Last Synced</TableHead>
+
                   <TableHead className="text-right">Connect</TableHead>
                 </TableRow>
               </TableHeader>
@@ -215,22 +199,7 @@ export default function ReposPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">GitHub</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        <Shield className="mr-1 h-3 w-3" />
-                        Private
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {/* You can add a lastSynced field if your backend provides it */}
-                        N/A
-                      </div>
-                    </TableCell>
+
                     <TableCell className="text-right">
                       <Button
                         variant={repo.connected ? "destructive" : "default"}

@@ -49,6 +49,13 @@ router.get('/github/callback', async (req, res) => {
         });
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!);
+        res.cookie('auth-token', token, {
+            httpOnly: false, // set to true for extra security if you don't need JS access
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7 * 1000, // 1 week in ms
+        });
         res.json({ user, token });
     } catch (err) {
         console.error(err);
@@ -209,6 +216,21 @@ router.post('/connect-repo', async (req, res) => {
     } catch (err) {
         console.error('[connect-repo] General error:', err);
         res.status(500).json({ error: 'Failed to toggle repo connection' });
+    }
+});
+
+// Add this endpoint to validate JWT tokens
+router.post('/validate-token', (req, res) => {
+    const token = req.cookies['auth-token'];
+    if (!token) {
+        return res.status(200).json({ valid: false });
+    }
+    try {
+        const secret = process.env.JWT_SECRET!;
+        const payload = jwt.verify(token, secret) as { userId: string };
+        return res.status(200).json({ valid: true, userId: payload.userId });
+    } catch (err) {
+        return res.status(200).json({ valid: false });
     }
 });
 

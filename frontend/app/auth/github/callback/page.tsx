@@ -26,10 +26,10 @@ export default function GitHubCallbackPage() {
         if (!res.ok) throw new Error("Auth failed");
         const data = await res.json();
         if (data.token) {
-          localStorage.setItem("token", data.token);
+          document.cookie = `auth-token=${data.token}; path=/;`;
           localStorage.setItem("user", JSON.stringify(data.user));
         }
-        router.push("/dashboard");
+        router.push("/repos");
       })
       .catch((e) => {
         console.error(e);

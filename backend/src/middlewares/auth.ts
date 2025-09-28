@@ -6,12 +6,10 @@ interface AuthenticatedRequest extends Request {
 }
 
 export function authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+    const token = req.cookies['auth-token'];
+    if (!token) {
+        return res.status(401).json({ error: 'Missing auth-token cookie' });
     }
-
-    const token = authHeader.split(' ')[1];
     try {
         const secret = process.env.JWT_SECRET!;
         const payload = jwt.verify(token, secret) as { userId: string };

@@ -10,12 +10,13 @@ import {
   ArrowRight,
   Play,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthModal } from "@/components/auth-modal";
 import { PricingSection } from "@/components/pricing-section";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const stats = [
   {
@@ -66,6 +67,19 @@ const companies = ["GitHub", "GitLab", "Bitbucket", "Azure DevOps", "Jira"];
 export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch("http://localhost:3001/auth/validate-token", {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.valid) setIsAuthenticated(true);
+      });
+  }, []);
 
   const handleOpenAuth = (mode: "login" | "signup" = "login") => {
     console.log(`[v0] Opening ${mode} modal`);
@@ -125,19 +139,30 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Button
-                variant="ghost"
-                onClick={handleSignInWithGitHub}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Sign In
-              </Button>
-              <Button
-                onClick={handleSignInWithGitHub}
-                className="bg-foreground text-background hover:bg-foreground/90"
-              >
-                Get Started
-              </Button>
+              {!isAuthenticated ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={handleSignInWithGitHub}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={handleSignInWithGitHub}
+                    className="bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    Get Started
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => router.push("/repos")}
+                  className="bg-foreground text-background hover:bg-foreground/90"
+                >
+                  Go to Dashboard
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -164,13 +189,23 @@ export default function LandingPage() {
           </p>
 
           <div className="flex items-center justify-center gap-4">
-            <Button
-              size="lg"
-              onClick={handleSignInWithGitHub}
-              className="bg-foreground text-background hover:bg-foreground/90"
-            >
-              Get Started
-            </Button>
+            {!isAuthenticated ? (
+              <Button
+                size="lg"
+                onClick={handleSignInWithGitHub}
+                className="bg-foreground text-background hover:bg-foreground/90"
+              >
+                Get Started
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={() => router.push("/repos")}
+                className="bg-foreground text-background hover:bg-foreground/90"
+              >
+                Go to Dashboard
+              </Button>
+            )}
             <Button
               size="lg"
               variant="outline"
@@ -262,7 +297,13 @@ export async function generatePR(commits: Commit[]) {
               Securely build, review, and deploy the best code with PullPal.
             </p>
             <div className="flex gap-4">
-              <Button onClick={handleSignInWithGitHub}>Get Started</Button>
+              {!isAuthenticated ? (
+                <Button onClick={handleSignInWithGitHub}>Get Started</Button>
+              ) : (
+                <Button onClick={() => router.push("/repos")}>
+                  Go to Dashboard
+                </Button>
+              )}
               <Button variant="outline" className="bg-transparent">
                 Explore Features
               </Button>
@@ -295,7 +336,13 @@ export async function generatePR(commits: Commit[]) {
       </section>
 
       {/* Pricing Section */}
-      <PricingSection onGetStarted={handleSignInWithGitHub} />
+      <PricingSection
+        onGetStarted={
+          !isAuthenticated
+            ? handleSignInWithGitHub
+            : () => router.push("/repos")
+        }
+      />
 
       {/* CTA Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">
@@ -310,11 +357,24 @@ export async function generatePR(commits: Commit[]) {
             </p>
             <Button
               size="lg"
-              onClick={handleSignInWithGitHub}
+              onClick={
+                !isAuthenticated
+                  ? handleSignInWithGitHub
+                  : () => router.push("/repos")
+              }
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Start Building Today
-              <ArrowRight className="h-4 w-4 ml-2" />
+              {!isAuthenticated ? (
+                <>
+                  Start Building Today
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              ) : (
+                <>
+                  Go to Dashboard
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
