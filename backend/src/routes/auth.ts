@@ -123,11 +123,11 @@ router.post('/connect-repo', async (req, res) => {
         }
 
         // Create webhook on GitHub
-        const webhookUrl = process.env.WEBHOOK_URL || 'https://30a2ea87c6e7.ngrok-free.app/webhooks/github';
+        const Url = process.env.WEBHOOK_URL || 'https://30a2ea87c6e7.ngrok-free.app/webhooks/github';
         // Remove any existing webhook with the same URL before creating a new one
         try {
             const webhooks = await listRepoWebhooks(owner, name, user.githubToken);
-            const matchingWebhooks = webhooks.filter((hook: any) => hook.config && hook.config.url === webhookUrl);
+            const matchingWebhooks = webhooks.filter((hook: any) => hook.config && hook.config.url === webhooks);
             for (const hook of matchingWebhooks) {
                 try {
                     await deleteRepoWebhook(owner, name, hook.id, user.githubToken);
@@ -140,7 +140,7 @@ router.post('/connect-repo', async (req, res) => {
             console.error('[connect-repo] Error listing/deleting existing webhooks before creation:', (err as any)?.response?.data || err);
         }
         // Now create the webhook
-        console.log('[connect-repo] Creating webhook on GitHub:', { owner, name, webhookUrl });
+        console.log('[connect-repo] Creating webhook on GitHub:', { owner, name, webhooks: Url });
         try {
             await axios.post(
                 `https://api.github.com/repos/${owner}/${name}/hooks`,
@@ -149,7 +149,7 @@ router.post('/connect-repo', async (req, res) => {
                     active: true,
                     events: ['pull_request'],
                     config: {
-                        url: webhookUrl,
+                        url: Url,
                         content_type: 'json',
                         secret: webhookSecret,
                     },
